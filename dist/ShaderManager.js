@@ -79,7 +79,8 @@ export class ShaderManager {
         const uResolution = this.gl.getUniformLocation(this.GLSLProgram, "uResolution");
         this.gl.uniform2f(uResolution, this.resX, this.resY);
         const uMouse = this.gl.getUniformLocation(this.GLSLProgram, "uMouse");
-        this.gl.uniform2f(uMouse, this.mouseManager.getMouseX(), this.mouseManager.getMouseY());
+        if (this.mouseManager.mouseActive())
+            this.gl.uniform2f(uMouse, this.mouseManager.getMouseX(), this.mouseManager.getMouseY());
         const uTime = this.gl.getUniformLocation(this.GLSLProgram, "uTime");
         const time = this.timer.getTime();
         this.gl.uniform1f(uTime, time);

@@ -6,6 +6,8 @@ export class MouseManager{
     private mouseX: number = .5;
     private mouseY: number = .5;
 
+    private mouseDown: boolean = false;
+
     constructor(canvas: HTMLCanvasElement){
 
         this.canvsas = canvas;
@@ -17,6 +19,9 @@ export class MouseManager{
 
         })
 
+        this.canvsas.addEventListener("mousedown",() => this.mouseDown = true);
+        this.canvsas.addEventListener("mouseup",() => this.mouseDown = false);
+
     }
 
     public getMouseX(): number{
@@ -25,6 +30,10 @@ export class MouseManager{
 
     public getMouseY(): number{
         return this.mouseY;
+    }
+
+    public mouseActive(): boolean{
+        return this.mouseDown;
     }
 
 }
