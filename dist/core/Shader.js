@@ -1,0 +1,14 @@
+export class Shader {
+    shader;
+    constructor(type, source, gl) {
+        this.shader = gl.createShader(type);
+        gl.shaderSource(this.shader, source);
+        gl.compileShader(this.shader);
+        const compileStatus = gl.getShaderParameter(this.shader, gl.COMPILE_STATUS);
+        if (!compileStatus)
+            throw new Error(`The shader [${type == gl.VERTEX_SHADER ? "VERTEX" : "FRAGMENT"}] could not be compiled.`);
+    }
+    getCompiledShader() {
+        return this.shader;
+    }
+}
