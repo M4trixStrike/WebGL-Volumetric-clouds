@@ -4,21 +4,22 @@ uniform vec2 uResolution;
 uniform vec2 uMouse;
 uniform float uTime;
 
-#define boundingAABB AABB(vec3(-40.,-1.,-40.),vec3(40.,1.,40.))
+#define boundingAABB AABB(vec3(-70.,-2.,-70.),vec3(70.,2.,70.))
+
 #define missedScene hitData(false,vec3(0.),vec3(0.),0.,0.)
 
 #define FOV 32.
-#define CAM vec3(0.,4.,0.)
+#define CAM vec3(0.,15.,0.)
 #define CAM_ROTATION vec3(0.,0.,0.)
 
-#define STEP_SIZE .2
+#define STEP_SIZE .3
 #define LIGHT_STEP_SIZE .5
 
 #define SUN vec3(20.,20.,50.)
 #define SUN_COLOR vec3(.9,.9,.9)
 #define SUN_INTENSITY 1.2
 
-#define MAX_STEPS 1000000.
+#define MAX_STEPS 50.
 
 
 struct ray{
@@ -142,7 +143,7 @@ float volumetricDensityMap3d(vec3 p){
     
     cv.x += uTime / 10. ;
    
-    cv.z += uTime / 4.;
+    cv.y += uTime / 15.;
 
     
     float wor1 = 1.-worley3d(cv,1.)*.9;
@@ -234,6 +235,19 @@ hitData intersectScene(ray r, AABB aabb) {
     );
 }
 
+bool pointInAabb(vec3 p, AABB boundingBox){
+
+    return (
+        p.x >= boundingBox.bMin.x &&
+        p.x <= boundingBox.bMax.x &&
+        p.y >= boundingBox.bMin.y &&
+        p.y <= boundingBox.bMax.y &&
+        p.z >= boundingBox.bMin.z &&
+        p.z <= boundingBox.bMax.z
+    );
+
+}
+
 void main() {
     vec2 uv = (gl_FragCoord.xy - .5 * uResolution.xy) / uResolution.y;
 
@@ -244,6 +258,8 @@ void main() {
 
     camRot.y = uMouse.x * 360.;
     camRot.x = -uMouse.y * 90. + 23.;
+
+    bool camInClouds = pointInAabb(CAM,boundingAABB);
 
     rayDir = vec3( vec4(rayDir,1.) * getRotationMatrix(camRot,CAM));
 
@@ -260,12 +276,12 @@ void main() {
         vec3 cloudColor = vec3(0.);
         vec3 sunColor = SUN_COLOR * SUN_INTENSITY;
 
-        float steps = distance(data.entryPoint, data.exitPoint);
+        float steps = distance(camInClouds?CAM:data.entryPoint, data.exitPoint);
 
         for(float s = 0.; s <= MAX_STEPS; s += STEP_SIZE) {
             if(s >= steps) break;
 
-            vec3 marchPoint = getRayPoint(r, data.entryT + s);
+            vec3 marchPoint = getRayPoint(r, camInClouds?s:data.entryT + s);
             float density = volumetricDensityMap3d(marchPoint);
 
             if(density < 0.05)
