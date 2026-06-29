@@ -4,13 +4,14 @@ uniform vec2 uResolution;
 uniform vec2 uMouse;
 uniform float uTime;
 
-#define boundingAABB AABB(vec3(-20.,-20.,-2.),vec3(20.,20.,2.))
+#define boundingAABB AABB(vec3(-40.,-1.,-40.),vec3(40.,1.,40.))
 #define missedScene hitData(false,vec3(0.),vec3(0.),0.,0.)
 
 #define FOV 32.
-#define CAM vec3(0.,0.,-140.)
+#define CAM vec3(0.,4.,0.)
+#define CAM_ROTATION vec3(0.,0.,0.)
 
-#define STEP_SIZE .3
+#define STEP_SIZE .2
 #define LIGHT_STEP_SIZE .5
 
 #define SUN vec3(20.,20.,50.)
@@ -143,9 +144,6 @@ float volumetricDensityMap3d(vec3 p){
    
     cv.z += uTime / 4.;
 
-    cv.x += -uMouse.x * 100.;
-    cv.y += -uMouse.y * 100.;
-
     
     float wor1 = 1.-worley3d(cv,1.)*.9;
 
@@ -169,6 +167,46 @@ vec3 getRayPoint(ray r, float t){
 
 }
 
+mat4 getRotationMatrix(vec3 rotAngles, vec3 org){
+
+    float thetaX = radians(rotAngles.x);
+    float thetaY = radians(rotAngles.y);
+    float thetaZ = radians(rotAngles.z);
+
+    mat4 t1 = mat4(
+        1.0, 0.0, 0.0, 0.0, 
+        0.0, 1.0, 0.0, 0.0,  
+        0.0, 0.0, 1.0, 0.0,  
+        org.x, org.y, org.z, 1.0 
+    );
+
+    mat3 rotX = mat3(
+        1.,0.,0.,
+        0.,cos(thetaX),-sin(thetaX),
+        0.,sin(thetaX),cos(thetaX)
+    );
+
+    mat3 rotY = mat3(
+        cos(thetaY),0.,sin(thetaY),
+        0.,1.,0.,
+        -sin(thetaY),0.,cos(thetaY)
+    );
+
+    mat3 rotZ = mat3(
+        cos(thetaZ),-sin(thetaZ),0.,
+        sin(thetaZ),cos(thetaZ),0.,
+        0.,0.,1.
+    );
+
+     mat4 t2 = mat4(
+        1.0, 0.0, 0.0, 0.0, 
+        0.0, 1.0, 0.0, 0.0,  
+        0.0, 0.0, 1.0, 0.0,  
+        -org.x, -org.y, -org.z, 1.0 
+    );
+
+    return t1 * mat4(rotX) * mat4(rotY) * mat4(rotZ) * t2;
+}
 
 hitData intersectScene(ray r, AABB aabb) {
     
@@ -199,12 +237,19 @@ hitData intersectScene(ray r, AABB aabb) {
 void main() {
     vec2 uv = (gl_FragCoord.xy - .5 * uResolution.xy) / uResolution.y;
 
-    float vpDist = 1.0 / tan(FOV * 3.14159265 / 360.0);
+    float vpDist = 1.0 / tan(radians(FOV));
     vec3 rayDir = normalize(vec3(uv, vpDist));
+
+    vec3 camRot = vec3(0.);
+
+    camRot.y = uMouse.x * 360.;
+    camRot.x = -uMouse.y * 90. + 23.;
+
+    rayDir = vec3( vec4(rayDir,1.) * getRotationMatrix(camRot,CAM));
 
     ray r = ray(CAM, rayDir);
 
-    vec3 skyColor = vec3(0.35, 0.52, 0.69) * dot(r.dir, vec3(0., 0., 1.));
+    vec3 skyColor = vec3(0.35, 0.52, 0.69);
     vec3 col = skyColor;
 
     hitData data = intersectScene(r, boundingAABB);
