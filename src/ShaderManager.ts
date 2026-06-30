@@ -194,4 +194,8 @@ export class ShaderManager{
         }
 
     }
+
+    public getRuntime(): number{
+        return this.timer.getTime();
+    }
 }  

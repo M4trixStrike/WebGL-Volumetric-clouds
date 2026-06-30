@@ -3,8 +3,8 @@ export class MouseManager{
 
     private readonly canvsas: HTMLCanvasElement;
 
-    private mouseX: number = .5;
-    private mouseY: number = .5;
+    private mouseX: number = 0.;
+    private mouseY: number = 0.;
 
     private mouseDown: boolean = false;
 
@@ -14,8 +14,8 @@ export class MouseManager{
 
         this.canvsas.addEventListener("mousemove", (eData) => {
 
-            this.mouseX = eData.clientX / this.canvsas.width;
-            this.mouseY = 1 - eData.clientY / this.canvsas.height;
+            this.mouseX = (eData.clientX - canvas.getBoundingClientRect().left) / this.canvsas.width;
+            this.mouseY = 1 - (eData.clientY - canvas.getBoundingClientRect().top) / this.canvsas.height;
 
         })
 

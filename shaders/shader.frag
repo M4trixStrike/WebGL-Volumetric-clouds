@@ -4,20 +4,26 @@ uniform vec2 uResolution;
 uniform vec2 uMouse;
 uniform float uTime;
 
-#define boundingAABB AABB(vec3(-70.,-2.,-70.),vec3(70.,2.,70.))
+uniform vec3 uUserSize;
+uniform vec3 uUserSpeed;
+
+uniform float uUserControl;
+
+#define boundingAABB AABB(vec3(-4.,-4.,-4.),vec3(4.,4.,4.))
 
 #define missedScene hitData(false,vec3(0.),vec3(0.),0.,0.)
 
 #define FOV 32.
-#define CAM vec3(0.,15.,0.)
+#define CAM vec3(0.,0.1,-30.)
 #define CAM_ROTATION vec3(0.,0.,0.)
 
-#define STEP_SIZE .3
+#define STEP_SIZE .15
 #define LIGHT_STEP_SIZE .5
 
 #define SUN vec3(20.,20.,50.)
 #define SUN_COLOR vec3(.9,.9,.9)
 #define SUN_INTENSITY 1.2
+#define SKYBOX vec3(0.35, 0.52, 0.69)
 
 #define MAX_STEPS 50.
 
@@ -137,14 +143,11 @@ float worley3d(vec3 p, float scale){
 
 }
 
-float volumetricDensityMap3d(vec3 p){
+float volumetricDensityMap3d(vec3 p, vec3 offs){
 
     vec3 cv = vec3(p);
-    
-    cv.x += uTime / 10. ;
-   
-    cv.y += uTime / 15.;
 
+    cv += offs;
     
     float wor1 = 1.-worley3d(cv,1.)*.9;
 
@@ -254,21 +257,46 @@ void main() {
     float vpDist = 1.0 / tan(radians(FOV));
     vec3 rayDir = normalize(vec3(uv, vpDist));
 
-    vec3 camRot = vec3(0.);
+    AABB uBoundingBox = boundingAABB;
 
-    camRot.y = uMouse.x * 360.;
-    camRot.x = -uMouse.y * 90. + 23.;
+    uBoundingBox.bMin.x -= uUserSize.x;
+    uBoundingBox.bMax.x += uUserSize.x;
 
-    bool camInClouds = pointInAabb(CAM,boundingAABB);
+    uBoundingBox.bMin.y -= uUserSize.y;
+    uBoundingBox.bMax.y += uUserSize.y;
 
-    rayDir = vec3( vec4(rayDir,1.) * getRotationMatrix(camRot,CAM));
+    uBoundingBox.bMin.z -= uUserSize.z;
+    uBoundingBox.bMax.z += uUserSize.z;
 
-    ray r = ray(CAM, rayDir);
+    vec3 userOffset = vec3(uTime*uUserSpeed.x,uTime*uUserSpeed.y,uTime*uUserSpeed.z);
 
-    vec3 skyColor = vec3(0.35, 0.52, 0.69);
-    vec3 col = skyColor;
+  
+    mat4 rayRot; 
+    mat4 camRot;;
+    
+    if(uUserControl == 1.){
 
-    hitData data = intersectScene(r, boundingAABB);
+        rayRot = getRotationMatrix(vec3(0.,uTime*5.,0.),CAM);
+        camRot = getRotationMatrix(vec3(0.,uTime*5.,0.),vec3(0.));
+
+    }
+    else{
+
+        rayRot = getRotationMatrix(vec3(-(uMouse.y-.5)*360.,(uMouse.x-.5)*360.,0.),CAM);
+        camRot = getRotationMatrix(vec3(-(uMouse.y-.5)*360.,(uMouse.x-.5)*360.,0.),vec3(0.));
+
+    }
+    
+
+    vec3 newCamPos = vec3(vec4(CAM,1.)*camRot);
+    vec3 newRayDir = vec3(vec4(rayDir,1.)*rayRot);
+
+    ray r = ray(newCamPos, newRayDir);
+    bool camInClouds = pointInAabb(CAM,uBoundingBox);
+    
+    vec3 col = SKYBOX;
+
+    hitData data = intersectScene(r, uBoundingBox);
 
     if(data.hasHit) {
 
@@ -282,7 +310,7 @@ void main() {
             if(s >= steps) break;
 
             vec3 marchPoint = getRayPoint(r, camInClouds?s:data.entryT + s);
-            float density = volumetricDensityMap3d(marchPoint);
+            float density = volumetricDensityMap3d(marchPoint,userOffset);
 
             if(density < 0.05)
                 continue;
@@ -292,7 +320,7 @@ void main() {
             vec3 lightDir = normalize(SUN - marchPoint);
             ray lightR = ray(marchPoint, lightDir);
 
-            hitData lightData = intersectScene(lightR, boundingAABB);
+            hitData lightData = intersectScene(lightR, uBoundingBox);
             float maxLightDist = lightData.exitT;
 
             float currentLightRayT = 1.0;
@@ -302,7 +330,7 @@ void main() {
                 if(lS >= maxLightDist) break;
                 
                 vec3 lightMarchPoint = getRayPoint(lightR, lS);
-                float lightDensity = volumetricDensityMap3d(lightMarchPoint);
+                float lightDensity = volumetricDensityMap3d(lightMarchPoint,userOffset);
 
                 if(lightDensity < 0.05)
                     continue;
@@ -320,7 +348,7 @@ void main() {
                 break;
         }
 
-        col = cloudColor + skyColor * globalTransmittance;
+        col = cloudColor + SKYBOX * globalTransmittance;
     }
 
     gl_FragColor = vec4(col, 1.0);

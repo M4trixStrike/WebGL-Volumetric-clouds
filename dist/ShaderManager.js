@@ -134,4 +134,7 @@ export class ShaderManager {
                 throw new Error(`Uniform [${uType}] is not supported nor recognized by this function!`);
         }
     }
+    getRuntime() {
+        return this.timer.getTime();
+    }
 }

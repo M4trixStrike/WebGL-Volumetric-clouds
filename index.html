@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Volumetric clouds</title>
+    <title>FPS: 67 | TRE: 0s</title>
     <style>
         canvas{
             border: 1px solid black;
@@ -20,11 +20,84 @@
 
             height: 90vh;
         }
+
+        div{
+
+            display: flex;
+
+            flex-direction: column;
+
+            background-color: rgb(34, 33, 37);
+            border-radius: 10px;
+
+            padding: 50px;
+            margin: 10px;
+
+        }
+
+        div span{
+            
+            color: white;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            margin-top: 10px;
+
+        }
+
+        div button{
+
+            color: white;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+
+            background-color: rgb(139, 24, 24);
+            
+            border: none;
+            border-radius: 25px;
+
+            padding: 5px;
+            padding-bottom: 7px;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            margin-top: 15px;
+        }
+
+        div button:active{
+
+            background-color: rgb(189, 96, 96);
+
+        }
+        
     </style>
 </head>
 <body>
     
     <canvas id="canvas"></canvas>
+
+    <div>
+
+        <span>Manual camera</span>
+        <input type="checkbox" id="userControl" checked="true">
+
+        <span>X axis width</span>
+        <input type="range" min="-4" max="4" id="sizeX" value="0" step="0.2">
+        <span>Height</span>
+        <input type="range" min="-4" max="4" id="sizeY" value="0" step="0.2">
+        <span>Z axis width</span>
+        <input type="range" min="-4" max="4" id="sizeZ" value="0" step="0.2">
+
+        <span>X axis scroll</span>
+        <input type="range" min="0" max="15" id="speedX" value="0" step=".1">
+        <span>Y axis scroll</span>
+        <input type="range" min="0" max="15" id="speedY" value="0" step=".1">
+        <span>Z axis scroll</span>
+        <input type="range" min="0" max="15" id="speedZ" value="0" step=".1">
+
+        <button id="resetBttn">RESET</button>
+
+    </div>
 
     <script src="./dist/main.js" type="module"></script>
 </body>
