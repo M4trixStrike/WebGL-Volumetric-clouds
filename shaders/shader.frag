@@ -6,23 +6,22 @@ uniform float uTime;
 
 uniform vec3 uUserSize;
 uniform vec3 uUserSpeed;
+uniform vec3 uUserSunPos;
+uniform vec3 uUserSunColor;
 
 uniform float uUserControl;
+uniform float uUserZoom;
+uniform float uUserInt;
 
 #define boundingAABB AABB(vec3(-4.,-4.,-4.),vec3(4.,4.,4.))
 
 #define missedScene hitData(false,vec3(0.),vec3(0.),0.,0.)
 
 #define FOV 32.
-#define CAM vec3(0.,0.1,-30.)
-#define CAM_ROTATION vec3(0.,0.,0.)
 
 #define STEP_SIZE .15
 #define LIGHT_STEP_SIZE .5
 
-#define SUN vec3(20.,20.,50.)
-#define SUN_COLOR vec3(.9,.9,.9)
-#define SUN_INTENSITY 1.2
 #define SKYBOX vec3(0.35, 0.52, 0.69)
 
 #define MAX_STEPS 50.
@@ -254,10 +253,14 @@ bool pointInAabb(vec3 p, AABB boundingBox){
 void main() {
     vec2 uv = (gl_FragCoord.xy - .5 * uResolution.xy) / uResolution.y;
 
+    vec3 CAM = vec3(0.,.1,uUserZoom);
+
+    vec3 SUN_COLOR = vec3(.9,.9,.9);
+
     float vpDist = 1.0 / tan(radians(FOV));
     vec3 rayDir = normalize(vec3(uv, vpDist));
 
-    AABB uBoundingBox = boundingAABB;
+    AABB uBoundingBox;
 
     uBoundingBox.bMin.x -= uUserSize.x;
     uBoundingBox.bMax.x += uUserSize.x;
@@ -274,10 +277,10 @@ void main() {
     mat4 rayRot; 
     mat4 camRot;;
     
-    if(uUserControl == 1.){
+    if(uUserControl != 1.){
 
-        rayRot = getRotationMatrix(vec3(0.,uTime*5.,0.),CAM);
-        camRot = getRotationMatrix(vec3(0.,uTime*5.,0.),vec3(0.));
+        rayRot = getRotationMatrix(vec3(0.,-uTime*5.,0.),CAM);
+        camRot = getRotationMatrix(vec3(0.,-uTime*5.,0.),vec3(0.));
 
     }
     else{
@@ -302,7 +305,7 @@ void main() {
 
         float globalTransmittance = 1.0;
         vec3 cloudColor = vec3(0.);
-        vec3 sunColor = SUN_COLOR * SUN_INTENSITY;
+        vec3 sunColor = uUserSunColor * uUserInt;
 
         float steps = distance(camInClouds?CAM:data.entryPoint, data.exitPoint);
 
@@ -317,7 +320,7 @@ void main() {
 
             float localTransmittance = exp(-density * STEP_SIZE);
 
-            vec3 lightDir = normalize(SUN - marchPoint);
+            vec3 lightDir = normalize(uUserSunPos - marchPoint);
             ray lightR = ray(marchPoint, lightDir);
 
             hitData lightData = intersectScene(lightR, uBoundingBox);
