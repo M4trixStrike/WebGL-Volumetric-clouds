@@ -51,7 +51,6 @@ struct hitData{
 
 };
 
-
 vec3 H33(vec3 p){
 
     p = fract(p*vec3(.123,.345,.567));
@@ -60,16 +59,6 @@ vec3 H33(vec3 p){
 
 
 }
-
-vec2 H22(vec2 p){
-
-    p = fract(p*vec2(.123,.567));
-    p = p + dot(p,p*12.67);
-    return fract(p*fract(p.x*p.y));
-
-
-}
-
 
 float perlin3d(vec3 p, float scale){
 
@@ -211,6 +200,14 @@ mat4 getRotationMatrix(vec3 rotAngles, vec3 org){
     return t1 * mat4(rotX) * mat4(rotY) * mat4(rotZ) * t2;
 }
 
+vec3 rotatePoint(vec3 p, mat4 rotMat){
+
+    return vec3(
+        vec4(p,1.) * rotMat
+    );
+
+}
+
 hitData intersectScene(ray r, AABB aabb) {
     
     vec3 dirFrac = 1.0 / r.dir;
@@ -289,12 +286,12 @@ void main() {
         camRot = getRotationMatrix(vec3(-(uMouse.y-.5)*360.,(uMouse.x-.5)*360.,0.),vec3(0.));
 
     }
-    
 
-    vec3 newCamPos = vec3(vec4(CAM,1.)*camRot);
-    vec3 newRayDir = vec3(vec4(rayDir,1.)*rayRot);
+    vec3 newCamPos = rotatePoint(CAM,camRot);
+    vec3 newRayDir = rotatePoint(rayDir,rayRot);
 
     ray r = ray(newCamPos, newRayDir);
+    
     bool camInClouds = pointInAabb(CAM,uBoundingBox);
     
     vec3 col = SKYBOX;
