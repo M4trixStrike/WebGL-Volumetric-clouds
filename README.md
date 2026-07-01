@@ -8,9 +8,9 @@ The engine relies on a ray tracer and **fixed-step raymarcher** to simulate clou
 UI Preview
 <img width="1915" height="942" alt="UI" src="https://github.com/user-attachments/assets/2290d00e-462d-477c-a624-c849d6e9828e" />
 Renders <br/>
-<img width="500" height="500" alt="view2" src="https://github.com/user-attachments/assets/00739577-603a-4a8f-85c7-0d3a758e9cab" />
-<img width="500" height="500" alt="view1" src="https://github.com/user-attachments/assets/cc7171e7-73d7-472e-b937-268bd15be356" />
-<img width="500" height="500" alt="view3" src="https://github.com/user-attachments/assets/efbc3f6a-9a28-49c5-9d53-897da4132df2" />
+<img width="300" height="300" alt="view2" src="https://github.com/user-attachments/assets/00739577-603a-4a8f-85c7-0d3a758e9cab" />
+<img width="300" height="300" alt="view1" src="https://github.com/user-attachments/assets/cc7171e7-73d7-472e-b937-268bd15be356" />
+<img width="300" height="300" alt="view3" src="https://github.com/user-attachments/assets/efbc3f6a-9a28-49c5-9d53-897da4132df2" />
 </p>
 
 ## Features
