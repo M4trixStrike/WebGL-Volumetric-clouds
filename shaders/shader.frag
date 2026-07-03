@@ -252,8 +252,6 @@ void main() {
 
     vec3 CAM = vec3(0.,.1,uUserZoom);
 
-    vec3 SUN_COLOR = vec3(.9,.9,.9);
-
     float vpDist = 1.0 / tan(radians(FOV));
     vec3 rayDir = normalize(vec3(uv, vpDist));
 
@@ -295,6 +293,10 @@ void main() {
     bool camInClouds = pointInAabb(CAM,uBoundingBox);
     
     vec3 col = SKYBOX;
+
+    float LightDot = dot(r.dir,normalize(uUserSunPos - r.org));
+    if(LightDot > .9995)
+        col = mix(SKYBOX,uUserSunColor,(LightDot - .9995) * 3000.);
 
     hitData data = intersectScene(r, uBoundingBox);
 
@@ -348,8 +350,9 @@ void main() {
                 break;
         }
 
-        col = cloudColor + SKYBOX * globalTransmittance;
+        col = cloudColor + col * globalTransmittance;
     }
+
 
     gl_FragColor = vec4(col, 1.0);
 }
