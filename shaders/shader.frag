@@ -19,7 +19,7 @@ uniform float uUserInt;
 
 #define FOV 32.
 
-#define STEP_SIZE .15
+#define STEP_SIZE .1
 #define LIGHT_STEP_SIZE .5
 
 #define SKYBOX vec3(0.35, 0.52, 0.69)
@@ -247,50 +247,19 @@ bool pointInAabb(vec3 p, AABB boundingBox){
 
 }
 
-void main() {
-    vec2 uv = (gl_FragCoord.xy - .5 * uResolution.xy) / uResolution.y;
-
-    vec3 CAM = vec3(0.,.1,uUserZoom);
+vec3 rayMarchCloud(vec2 uv,vec3 camera, AABB boundingBox, mat4 camRot, mat4 rayRot){
 
     float vpDist = 1.0 / tan(radians(FOV));
     vec3 rayDir = normalize(vec3(uv, vpDist));
 
-    AABB uBoundingBox;
-
-    uBoundingBox.bMin.x -= uUserSize.x;
-    uBoundingBox.bMax.x += uUserSize.x;
-
-    uBoundingBox.bMin.y -= uUserSize.y;
-    uBoundingBox.bMax.y += uUserSize.y;
-
-    uBoundingBox.bMin.z -= uUserSize.z;
-    uBoundingBox.bMax.z += uUserSize.z;
+    vec3 newCamPos = rotatePoint(camera,camRot);
+    vec3 newRayDir = rotatePoint(rayDir,rayRot);
 
     vec3 userOffset = vec3(uTime*uUserSpeed.x,uTime*uUserSpeed.y,uTime*uUserSpeed.z);
 
-  
-    mat4 rayRot; 
-    mat4 camRot;;
-    
-    if(uUserControl != 1.){
-
-        rayRot = getRotationMatrix(vec3(0.,-uTime*5.,0.),CAM);
-        camRot = getRotationMatrix(vec3(0.,-uTime*5.,0.),vec3(0.));
-
-    }
-    else{
-
-        rayRot = getRotationMatrix(vec3(-(uMouse.y-.5)*360.,(uMouse.x-.5)*360.,0.),CAM);
-        camRot = getRotationMatrix(vec3(-(uMouse.y-.5)*360.,(uMouse.x-.5)*360.,0.),vec3(0.));
-
-    }
-
-    vec3 newCamPos = rotatePoint(CAM,camRot);
-    vec3 newRayDir = rotatePoint(rayDir,rayRot);
-
     ray r = ray(newCamPos, newRayDir);
     
-    bool camInClouds = pointInAabb(CAM,uBoundingBox);
+    bool camInClouds = pointInAabb(camera,boundingBox);
     
     vec3 col = SKYBOX;
 
@@ -298,7 +267,7 @@ void main() {
     if(LightDot > .9995)
         col = mix(SKYBOX,uUserSunColor,(LightDot - .9995) * 3000.);
 
-    hitData data = intersectScene(r, uBoundingBox);
+    hitData data = intersectScene(r, boundingBox);
 
     if(data.hasHit) {
 
@@ -306,7 +275,7 @@ void main() {
         vec3 cloudColor = vec3(0.);
         vec3 sunColor = uUserSunColor * uUserInt;
 
-        float steps = distance(camInClouds?CAM:data.entryPoint, data.exitPoint);
+        float steps = distance(camInClouds?camera:data.entryPoint, data.exitPoint);
 
         for(float s = 0.; s <= MAX_STEPS; s += STEP_SIZE) {
             if(s >= steps) break;
@@ -322,7 +291,7 @@ void main() {
             vec3 lightDir = normalize(uUserSunPos - marchPoint);
             ray lightR = ray(marchPoint, lightDir);
 
-            hitData lightData = intersectScene(lightR, uBoundingBox);
+            hitData lightData = intersectScene(lightR, boundingBox);
             float maxLightDist = lightData.exitT;
 
             float currentLightRayT = 1.0;
@@ -346,13 +315,50 @@ void main() {
 
             globalTransmittance *= localTransmittance;
 
-            if(globalTransmittance < 0.01)
+            if(globalTransmittance < 0.15)
                 break;
         }
 
         col = cloudColor + col * globalTransmittance;
     }
 
+    return col;
+
+}
+
+void main() {
+    vec2 uv = (gl_FragCoord.xy - .5 * uResolution.xy) / uResolution.y;
+
+    vec3 CAM = vec3(0.,0.,uUserZoom);
+
+    AABB uBoundingBox;
+
+    uBoundingBox.bMin.x -= uUserSize.x;
+    uBoundingBox.bMax.x += uUserSize.x;
+
+    uBoundingBox.bMin.y -= uUserSize.y;
+    uBoundingBox.bMax.y += uUserSize.y;
+
+    uBoundingBox.bMin.z -= uUserSize.z;
+    uBoundingBox.bMax.z += uUserSize.z;
+
+    mat4 rayRot; 
+    mat4 camRot;;
+    
+    if(uUserControl != 1.){
+
+        rayRot = getRotationMatrix(vec3(0.,-mod(uTime*5.,360.),0.),CAM);
+        camRot = getRotationMatrix(vec3(0.,-mod(uTime*5.,350.),0.),vec3(0.));
+
+    }
+    else{
+
+        rayRot = getRotationMatrix(vec3(-(uMouse.y-.5)*360.,(uMouse.x-.5)*360.,0.),CAM);
+        camRot = getRotationMatrix(vec3(-(uMouse.y-.5)*360.,(uMouse.x-.5)*360.,0.),vec3(0.));
+
+    }
+
+    vec3 col = rayMarchCloud(uv, CAM, uBoundingBox, camRot, rayRot);
 
     gl_FragColor = vec4(col, 1.0);
 }
