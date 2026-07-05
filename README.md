@@ -35,7 +35,7 @@ To increase cloud quality, decrease `STEP_SIZE` and `LIGHT_STEP_SIZE` constants.
 
 ## How to run
 
-The engine is based on JavaScript modules to link files. Because of this, the application has to be server over HTTP or HTTPS.
+The engine is based on JavaScript modules to link files. Because of this, the application has to be served over HTTP or HTTPS.
 
 ### Before you start:
 
