@@ -27,7 +27,7 @@ export var UniformType;
     UniformType[UniformType["MATRIX_4"] = 10] = "MATRIX_4";
 })(UniformType || (UniformType = {}));
 export class ShaderManager {
-    gl;
+    _gl;
     GLSLProgram;
     fragmentCache;
     vertexCache;
@@ -36,7 +36,7 @@ export class ShaderManager {
     mouseManager;
     timer;
     constructor(canvas, resX, resY) {
-        this.gl = canvas.getContext("webgl");
+        this._gl = canvas.getContext("webgl");
         this.resX = resX;
         this.resY = resY;
         canvas.width = resX;
@@ -52,11 +52,14 @@ export class ShaderManager {
         const fragFileHandler = new File(SHADER_FRAG_SRC);
         this.fragmentCache = await fragFileHandler.open();
     }
+    get gl() {
+        if (!this._gl)
+            throw new Error("WebGl is not supported in your browser!");
+        return this._gl;
+    }
     async compileShaders() {
         const t1 = Date.now();
         await this.loadShaderData();
-        if (!this.gl)
-            throw new Error("WebGl is not supported in your browser!");
         if (this.vertexCache == undefined || this.fragmentCache == undefined)
             throw new Error("Load shader data before compiling the shaders!");
         const vertexShader = new Shader(this.gl.VERTEX_SHADER, this.vertexCache, this.gl);
@@ -74,7 +77,7 @@ export class ShaderManager {
         this.gl.useProgram(this.GLSLProgram);
         console.info(`Shader compiled in ${Date.now() - t1}ms.`);
     }
-    renderShaders() {
+    renderShader() {
         this.gl.viewport(0, 0, this.resX, this.resY);
         const uResolution = this.gl.getUniformLocation(this.GLSLProgram, "uResolution");
         this.gl.uniform2f(uResolution, this.resX, this.resY);
@@ -84,7 +87,7 @@ export class ShaderManager {
         const uTime = this.gl.getUniformLocation(this.GLSLProgram, "uTime");
         const time = this.timer.getTime();
         this.gl.uniform1f(uTime, time);
-        this.gl.drawArrays(this.gl.TRIANGLES, 0, vertices.length);
+        this.gl.drawArrays(this.gl.TRIANGLES, 0, vertices.length / 2);
     }
     // Uniform injectors
     addUniform(uType, uName, uVector) {

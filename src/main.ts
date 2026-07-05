@@ -96,7 +96,7 @@ function renderLoop(){
     }
     fps ++;
 
-    sm.renderShaders();
+    sm.renderShader();
     window.requestAnimationFrame(renderLoop);
 }
 

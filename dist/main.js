@@ -68,7 +68,7 @@ function renderLoop() {
         deltaT = Date.now();
     }
     fps++;
-    sm.renderShaders();
+    sm.renderShader();
     window.requestAnimationFrame(renderLoop);
 }
 renderLoop();

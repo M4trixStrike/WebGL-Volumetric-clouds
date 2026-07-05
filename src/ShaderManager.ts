@@ -32,7 +32,7 @@ export enum UniformType{
 
 export class ShaderManager{
 
-    private readonly gl: WebGLRenderingContext;
+    private readonly _gl: WebGLRenderingContext | null;
     private GLSLProgram: WebGLProgram | undefined;
 
     private fragmentCache: string | undefined;
@@ -46,7 +46,7 @@ export class ShaderManager{
 
     constructor(canvas: HTMLCanvasElement, resX: number, resY: number){
 
-        this.gl = canvas.getContext("webgl") as WebGLRenderingContext;
+        this._gl = canvas.getContext("webgl");
         this.resX = resX;
         this.resY = resY;
 
@@ -71,14 +71,19 @@ export class ShaderManager{
 
     }
 
+    private get gl(): WebGLRenderingContext{
+
+        if(!this._gl)
+            throw new Error("WebGl is not supported in your browser!");
+        return this._gl;
+        
+    }
+
     public async compileShaders(): Promise<void>{
 
         const t1 = Date.now();
 
         await this.loadShaderData();
-
-        if(!this.gl)
-            throw new Error("WebGl is not supported in your browser!");
 
         if(this.vertexCache == undefined || this.fragmentCache == undefined)
             throw new Error("Load shader data before compiling the shaders!")
@@ -106,7 +111,7 @@ export class ShaderManager{
         console.info(`Shader compiled in ${Date.now()-t1}ms.`)
     }
 
-    public renderShaders(): void{
+    public renderShader(): void{
 
         this.gl.viewport(0, 0, this.resX, this.resY);
 
@@ -131,7 +136,7 @@ export class ShaderManager{
             time
         );
 
-        this.gl.drawArrays(this.gl.TRIANGLES, 0, vertices.length);
+        this.gl.drawArrays(this.gl.TRIANGLES, 0, vertices.length/2);
     }
 
     // Uniform injectors
@@ -196,6 +201,8 @@ export class ShaderManager{
     }
 
     public getRuntime(): number{
+
         return this.timer.getTime();
+
     }
 }  
