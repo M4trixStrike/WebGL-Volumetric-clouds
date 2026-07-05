@@ -11,6 +11,7 @@ const sunY = document.getElementById("sunPosY");
 const sunZ = document.getElementById("sunPosZ");
 const sunIntensity = document.getElementById("int");
 const resetBtn = document.getElementById("resetBttn");
+const randomBtn = document.getElementById("randomBttn");
 const zoom = document.getElementById("zoom");
 const color = document.getElementById("sunColor");
 const userControl = document.getElementById("userControl");
@@ -41,10 +42,14 @@ resetBtn.onclick = () => {
             e.value = "50";
     });
 };
+randomBtn.onclick = () => {
+    sm.addUniform(UniformType.VECTOR_FLOAT_3, "uRandomVector", [Math.random() * 100, Math.random() * 100, Math.random() * 100]);
+};
 const sm = new ShaderManager(canvas, 500, 500);
 await sm.compileShaders();
 let deltaT = Date.now();
 let fps = 67;
+sm.addUniform(UniformType.VECTOR_FLOAT_3, "uRandomVector", [Math.random() * 100, Math.random() * 100, Math.random() * 100]);
 function renderLoop() {
     sm.addUniform(UniformType.VECTOR_FLOAT_3, "uUserSize", [parseFloat(sizeX.value), parseFloat(sizeY.value), parseFloat(sizeZ.value)]);
     sm.addUniform(UniformType.VECTOR_FLOAT_3, "uUserSpeed", [parseFloat(speedX.value), parseFloat(speedY.value), parseFloat(speedZ.value)]);

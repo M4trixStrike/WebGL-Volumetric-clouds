@@ -17,6 +17,7 @@ const sunZ = document.getElementById("sunPosZ") as HTMLInputElement;
 const sunIntensity = document.getElementById("int") as HTMLInputElement;
 
 const resetBtn = document.getElementById("resetBttn") as HTMLButtonElement;
+const randomBtn = document.getElementById("randomBttn") as HTMLButtonElement;
 
 const zoom = document.getElementById("zoom") as HTMLInputElement;
 
@@ -60,12 +61,18 @@ resetBtn.onclick = () => {
 
 }
 
+randomBtn.onclick = () => {
+    sm.addUniform(UniformType.VECTOR_FLOAT_3,"uRandomVector",[Math.random()*100,Math.random()*100,Math.random()*100]);
+}
+
 const sm = new ShaderManager(canvas, 500, 500);
 
 await sm.compileShaders();
 
 let deltaT = Date.now();
 let fps = 67;
+
+sm.addUniform(UniformType.VECTOR_FLOAT_3,"uRandomVector",[Math.random()*100,Math.random()*100,Math.random()*100]);
 
 function renderLoop(){
 
@@ -81,7 +88,6 @@ function renderLoop(){
         hetToNum(color.value.substring(3,5)) / 255,
         hetToNum(color.value.substring(5,7)) / 255,
     ])
-
 
     if(Date.now() - deltaT >= 1000){
         document.title = `FPS: ${fps} | RTE: ${Math.floor(sm.getRuntime())}s`;

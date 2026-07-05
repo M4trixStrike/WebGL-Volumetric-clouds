@@ -23,6 +23,8 @@ Renders <br/>
 
 <br>
 
+The simulation is poweder by a self-made shader engine. ( [**ShaderIO**](https://github.com/M4trixStrike/ShaderIO) )
+
 **User interface** \
 Provided user interface allows for quick modification of some parameters like: cloud bounding box size, noise offsets, light colors and more.
 
