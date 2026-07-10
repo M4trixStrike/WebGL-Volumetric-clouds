@@ -58,6 +58,11 @@ vec3 H33(vec3 p){
     p = p + dot(p,p*12.67);
     return fract(p*fract(p.x*p.y*p.z));
 
+}
+
+vec3 H33s(vec3 p){
+
+    return H33(p) * 2. - 1.;
 
 }
 
@@ -65,44 +70,45 @@ float perlin3d(vec3 p, float scale){
 
     p *= scale;
     
-    vec3 gv = smoothstep(0.,1.,fract(p));
+    vec3 gv = fract(p);
+    vec3 gvSmooth = smoothstep(0.,1.,fract(p));
     vec3 id = floor(p);
     
     // BACK
     
-    vec3 b1 = H33(id);
-    vec3 b2 = H33(id + vec3(1.,0.,0.));
-    vec3 b3 = H33(id + vec3(0.,1.,0.));
-    vec3 b4 = H33(id + vec3(1.,1.,0.));
+    vec3 b1 = H33s(id);
+    vec3 b2 = H33s(id + vec3(1.,0.,0.));
+    vec3 b3 = H33s(id + vec3(0.,1.,0.));
+    vec3 b4 = H33s(id + vec3(1.,1.,0.));
     
-    float b1d = dot(b1,gv);
-    float b2d = dot(b2,gv - vec3(1.,0.,0.));
-    float b3d = dot(b3,gv - vec3(0.,1.,0.));
-    float b4d = dot(b4,gv - vec3(1.,1.,0.));
+    float b1dot = dot(b1,gv);
+    float b2dot = dot(b2,gv - vec3(1.,0.,0.));
+    float b3dot = dot(b3,gv - vec3(0.,1.,0.));
+    float b4dot = dot(b4,gv - vec3(1.,1.,0.));
     
-    float b12 = mix(b1d,b2d,gv.x);
-    float b34 = mix(b3d,b4d,gv.x);
+    float b12 = mix(b1dot,b2dot,gvSmooth.x);
+    float b34 = mix(b3dot,b4dot,gvSmooth.x);
     
-    float b1234 = mix(b12,b34,gv.y);
+    float b1234 = mix(b12,b34,gvSmooth.y);
     
     // FRONT
     
-    vec3 f1 = H33(id + vec3(0.,0.,1.));
-    vec3 f2 = H33(id + vec3(1.,0.,1.));
-    vec3 f3 = H33(id + vec3(0.,1.,1.));
-    vec3 f4 = H33(id + vec3(1.,1.,1.));
+    vec3 f1 = H33s(id + vec3(0.,0.,1.));
+    vec3 f2 = H33s(id + vec3(1.,0.,1.));
+    vec3 f3 = H33s(id + vec3(0.,1.,1.));
+    vec3 f4 = H33s(id + vec3(1.,1.,1.));
     
-    float f1d = dot(f1,gv - vec3(0.,0.,1.));
-    float f2d = dot(f2,gv - vec3(1.,0.,1.));
-    float f3d = dot(f3,gv - vec3(0.,1.,1.));
-    float f4d = dot(f4,gv - vec3(1.,1.,1.));
+    float f1dot = dot(f1,gv - vec3(0.,0.,1.));
+    float f2dot = dot(f2,gv - vec3(1.,0.,1.));
+    float f3dot = dot(f3,gv - vec3(0.,1.,1.));
+    float f4dot = dot(f4,gv - vec3(1.,1.,1.));
     
-    float f12 = mix(f1d,f2d,gv.x);
-    float f34 = mix(f3d,f4d,gv.x);
+    float f12 = mix(f1dot,f2dot,gvSmooth.x);
+    float f34 = mix(f3dot,f4dot,gvSmooth.x);
     
-    float f1234 = mix(f12,f34,gv.y);
+    float f1234 = mix(f12,f34,gvSmooth.y);
     
-    return mix(b1234,f1234,gv.z)*10.;
+    return mix(b1234,f1234,gvSmooth.z)*5.;
 
 }
 
@@ -306,7 +312,7 @@ vec3 rayMarchCloud(vec2 uv, vec3 camera, float zoom, mat3 camRot, vec3 lookat,  
                 break;
         }
 
-        col = cloudColor + col * globalTransmittance;
+        col = cloudColor + col * max(globalTransmittance,.3);
     }
 
     return col;
