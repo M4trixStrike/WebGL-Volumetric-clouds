@@ -1,4 +1,5 @@
-import { ShaderManager, UniformType } from "./ShaderManager.js";
+import { UniformType } from "./core/managers/UniformManager.js";
+import { ShaderProgram } from "./ShaderProgram.js";
 
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
 
@@ -65,9 +66,9 @@ randomBtn.onclick = () => {
     sm.addUniform(UniformType.VECTOR_FLOAT_3,"uRandomVector",[Math.random()*100,Math.random()*100,Math.random()*100]);
 }
 
-const sm = new ShaderManager(canvas, 500, 500);
+const sm = new ShaderProgram(canvas, 500, 500);
 
-await sm.compileShaders();
+await sm.compileShader();
 
 let deltaT = Date.now();
 let fps = 67;
