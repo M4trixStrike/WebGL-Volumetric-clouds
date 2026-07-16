@@ -101,37 +101,37 @@
         <input type="checkbox" id="userControl">
 
         <span>X axis width</span>
-        <input type="range" min="0" max="16" id="sizeX" value="4" step="0.2" name="reset4">
+        <input type="range" min="0" max="16" id="sizeX" value="4" step="0.2" data-default="4">
         <span>Height</span>
-        <input type="range" min="0" max="16" id="sizeY" value="4" step="0.2" name="reset4">
+        <input type="range" min="0" max="16" id="sizeY" value="4" step="0.2" data-default="4">
         <span>Z axis width</span>
-        <input type="range" min="0" max="16" id="sizeZ" value="4" step="0.2" name="reset4">
+        <input type="range" min="0" max="16" id="sizeZ" value="4" step="0.2" data-default="4">
 
         <span>X axis scroll</span>
-        <input type="range" min="0" max="15" id="speedX" value="0" step=".1" name="reset">
+        <input type="range" min="0" max="15" id="speedX" value="0" step=".1" data-default="0">
         <span>Y axis scroll</span>
-        <input type="range" min="0" max="15" id="speedY" value="0" step=".1" name="reset">
+        <input type="range" min="0" max="15" id="speedY" value="0" step=".1" data-default="0">
         <span>Z axis scroll</span>
-        <input type="range" min="0" max="15" id="speedZ" value="0" step=".1" name="reset">
+        <input type="range" min="0" max="15" id="speedZ" value="0" step=".1" data-default="0">
 
         <span>Zoom</span>
-        <input type="range" min="-50" max="-1" id="zoom" value="-30" step=".5" name="reset30">
+        <input type="range" min="-50" max="-1" id="zoom" value="-30" step=".5" data-default="-30">
 
         <span>Light position</span>
         <div>
             X:
-            <input type="number" value="20" name = "x" id="sunPosX">
+            <input type="number" value="20" name = "x" id="sunPosX" data-default="20">
             Y:
-            <input type="number" value="20" name = "y" id="sunPosY">
+            <input type="number" value="20" name = "y" id="sunPosY" data-default="20">
             Z:
-            <input type="number" value="50" name = "z" id="sunPosZ">
+            <input type="number" value="50" name = "z" id="sunPosZ" data-default="50">
         </div>
         
         <span>Light intensity</span>
-        <input type="range" min="0" max="2" id="int" value="1.2" step=".1" name="int">
+        <input type="range" min="0" max="2" id="int" value="1.2" step=".1" data-default="1.2">
 
         <span>Light color</span>
-        <input type="color" value="#E5E5E5" name="light" id="sunColor">
+        <input type="color" value="#E5E5E5" name="light" id="sunColor" data-default="#E5E5E5">
 
         <button id="randomBttn" style="background-color: rgb(11, 142, 55);">RANDOMIZE OFFSET</button>
         <button id="resetBttn">RESET</button>

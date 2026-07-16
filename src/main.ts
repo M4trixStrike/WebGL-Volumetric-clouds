@@ -41,26 +41,12 @@ userControl.onchange = () => {
 
 resetBtn.onclick = () => {
 
-    document.querySelectorAll("input").forEach((e: HTMLInputElement)=>{
-        if(e.name == "reset30")
-            e.value = "-30";
-        if(e.name == "reset4")
-            e.value = "4";
-        if(e.name == "reset")
-            e.value = "0";
-        if(e.name == "light")
-            e.value = "#E5E5E5";
-        if(e.name == "int")
-            e.value = "1.2";
-        if(e.name == "x")
-            e.value = "20";
-        if(e.name == "y")
-            e.value = "20";
-        if(e.name == "z")
-            e.value = "50";
-    })
-
-}
+    document.querySelectorAll("input[data-default]").forEach((e) => {
+        const input = e as HTMLInputElement;
+        input.value = input.dataset.default || "";
+    });
+    
+};
 
 randomBtn.onclick = () => {
     sm.addUniform(UniformType.VECTOR_FLOAT_3,"uRandomVector",[Math.random()*100,Math.random()*100,Math.random()*100]);
