@@ -19,7 +19,7 @@ export class UniformManager {
         this.glContext = renderingContext;
         this.GLSLProgram = program;
     }
-    addUniform(uType, uName, uVector) {
+    setUniform(uType, uName, uVector) {
         const uLoc = this.glContext.getUniformLocation(this.GLSLProgram, uName);
         switch (uType) {
             case UniformType.FLOAT:
@@ -50,7 +50,7 @@ export class UniformManager {
                 throw new Error(`Uniform [${uType}] is not supported nor recognized by this function!`);
         }
     }
-    addUniformMatrix(uType, uName, uVector, mTranspose) {
+    setUniformMatrix(uType, uName, uVector, mTranspose) {
         const uLoc = this.glContext.getUniformLocation(this.GLSLProgram, uName);
         switch (uType) {
             case UniformType.MATRIX_2:

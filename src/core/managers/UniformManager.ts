@@ -26,7 +26,7 @@ export class UniformManager{
 
     }
 
-    public addUniform(uType: UniformType, uName: string, uVector: number[]){
+    public setUniform(uType: UniformType, uName: string, uVector: number[]){
 
         const uLoc = this.glContext.getUniformLocation(this.GLSLProgram, uName);
         
@@ -63,7 +63,7 @@ export class UniformManager{
 
     }
 
-    public addUniformMatrix(uType: UniformType, uName: string, uVector: number[], mTranspose: boolean){
+    public setUniformMatrix(uType: UniformType, uName: string, uVector: number[], mTranspose: boolean){
 
         const uLoc = this.glContext.getUniformLocation(this.GLSLProgram, uName);
 

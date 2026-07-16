@@ -118,7 +118,7 @@ export class ShaderProgram{
 
         this.gl.viewport(0, 0, this.resX, this.resY);
         
-        this.uniformManager?.addUniform(
+        this.uniformManager?.setUniform(
             UniformType.VECTOR_FLOAT_2,
             "uResolution",
             [
@@ -128,7 +128,7 @@ export class ShaderProgram{
         );
         
         if(this.mouseManager.mouseActive())
-            this.uniformManager?.addUniform(
+            this.uniformManager?.setUniform(
                 UniformType.VECTOR_FLOAT_2,
                 "uMouse",
                 [
@@ -138,7 +138,7 @@ export class ShaderProgram{
             );
 
         const time = this.timer.getTime();
-        this.uniformManager?.addUniform(
+        this.uniformManager?.setUniform(
             UniformType.FLOAT,
             "uTime",
             [
@@ -162,15 +162,15 @@ export class ShaderProgram{
 
     }
 
-    public addUniform(uType: UniformType, uName: string, uVector: number[]): void{
+    public setUniform(uType: UniformType, uName: string, uVector: number[]): void{
         
-        this.uniformManager?.addUniform(uType,uName,uVector);
+        this.uniformManager?.setUniform(uType,uName,uVector);
 
     }
 
-    public addUniformMatrix(uType: UniformType, uName: string, uVector: number[], mTranspose: boolean): void{
+    public setUniformMatrix(uType: UniformType, uName: string, uVector: number[], mTranspose: boolean): void{
         
-        this.uniformManager?.addUniformMatrix(uType,uName,uVector,mTranspose);
+        this.uniformManager?.setUniformMatrix(uType,uName,uVector,mTranspose);
 
     }
     

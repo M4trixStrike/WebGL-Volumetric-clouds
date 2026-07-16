@@ -75,17 +75,17 @@ export class ShaderProgram {
     }
     renderShader() {
         this.gl.viewport(0, 0, this.resX, this.resY);
-        this.uniformManager?.addUniform(UniformType.VECTOR_FLOAT_2, "uResolution", [
+        this.uniformManager?.setUniform(UniformType.VECTOR_FLOAT_2, "uResolution", [
             this.resX,
             this.resY
         ]);
         if (this.mouseManager.mouseActive())
-            this.uniformManager?.addUniform(UniformType.VECTOR_FLOAT_2, "uMouse", [
+            this.uniformManager?.setUniform(UniformType.VECTOR_FLOAT_2, "uMouse", [
                 this.mouseManager.getMouseX(),
                 this.mouseManager.getMouseY()
             ]);
         const time = this.timer.getTime();
-        this.uniformManager?.addUniform(UniformType.FLOAT, "uTime", [
+        this.uniformManager?.setUniform(UniformType.FLOAT, "uTime", [
             time
         ]);
         this.gl.drawArrays(this.gl.TRIANGLES, 0, vertices.length / 2);
@@ -96,10 +96,10 @@ export class ShaderProgram {
     getRuntime() {
         return this.timer.getTime();
     }
-    addUniform(uType, uName, uVector) {
-        this.uniformManager?.addUniform(uType, uName, uVector);
+    setUniform(uType, uName, uVector) {
+        this.uniformManager?.setUniform(uType, uName, uVector);
     }
-    addUniformMatrix(uType, uName, uVector, mTranspose) {
-        this.uniformManager?.addUniformMatrix(uType, uName, uVector, mTranspose);
+    setUniformMatrix(uType, uName, uVector, mTranspose) {
+        this.uniformManager?.setUniformMatrix(uType, uName, uVector, mTranspose);
     }
 }
