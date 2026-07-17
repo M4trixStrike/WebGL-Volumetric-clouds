@@ -22,6 +22,8 @@ const randomBtn = document.getElementById("randomBttn") as HTMLButtonElement;
 
 const zoom = document.getElementById("zoom") as HTMLInputElement;
 
+const scale = document.getElementById("scale") as HTMLInputElement;
+
 const color = document.getElementById("sunColor") as HTMLInputElement;
 
 const userControl = document.getElementById("userControl") as HTMLInputElement;
@@ -69,6 +71,7 @@ function renderLoop(){
     sm.setUniform(UniformType.FLOAT,"uUserControl",[controlStatus]);
     sm.setUniform(UniformType.FLOAT,"uUserZoom",[parseFloat(zoom.value)]);
     sm.setUniform(UniformType.FLOAT,"uUserInt",[parseFloat(sunIntensity.value)]);
+    sm.setUniform(UniformType.FLOAT,"uUserScale",[parseFloat(scale.value)]);
 
     sm.setUniform(UniformType.VECTOR_FLOAT_3,"uUserSunColor",[
         hexToNum(color.value.substring(1,3)) / 255,

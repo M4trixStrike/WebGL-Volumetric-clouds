@@ -13,12 +13,9 @@ uniform vec3 uRandomVector;
 uniform float uUserControl;
 uniform float uUserZoom;
 uniform float uUserInt;
-
-#define boundingAABB AABB(vec3(-4.,-4.,-4.),vec3(4.,4.,4.))
+uniform float uUserScale;
 
 #define missedScene hitData(false,vec3(0.),vec3(0.),0.,0.)
-
-#define FOV 32.
 
 #define STEP_SIZE .15
 #define LIGHT_STEP_SIZE .5
@@ -26,7 +23,6 @@ uniform float uUserInt;
 #define SKYBOX vec3(0.35, 0.52, 0.69)
 
 #define MAX_STEPS 50.
-
 
 struct ray{
 
@@ -60,61 +56,82 @@ vec3 H33(vec3 p){
 
 }
 
-vec3 H33s(vec3 p){
+vec3 H33S(vec3 p){
 
     return H33(p) * 2. - 1.;
 
 }
 
-float perlin3d(vec3 p, float scale){
-
-    p *= scale;
+float perlin3d(vec3 c, float f, float a){
     
-    vec3 gv = fract(p);
-    vec3 gvSmooth = smoothstep(0.,1.,fract(p));
-    vec3 id = floor(p);
+    c *= f;
     
-    // BACK
+    // Grid setup
+    vec3 gv = fract(c),
+        id = floor(c),
+        gvSmooth = smoothstep(0.,1.,gv);
     
-    vec3 b1 = H33s(id);
-    vec3 b2 = H33s(id + vec3(1.,0.,0.));
-    vec3 b3 = H33s(id + vec3(0.,1.,0.));
-    vec3 b4 = H33s(id + vec3(1.,1.,0.));
+    // Noise for Z = 0
     
-    float b1dot = dot(b1,gv);
-    float b2dot = dot(b2,gv - vec3(1.,0.,0.));
-    float b3dot = dot(b3,gv - vec3(0.,1.,0.));
-    float b4dot = dot(b4,gv - vec3(1.,1.,0.));
+    // Random corner vectors
+    vec3 vBotLeft = H33S(id),
+        vBotRight = H33S(id + vec3(1.,0.,0.) ),
+        vTopLeft = H33S(id + vec3(0.,1.,0.) ),
+        vTopRight = H33S(id + vec3(1.,1.,0.) );
+        
+    // Corner -> lUv vectors
+    vec3 fromBotLeft = gv,
+        fromBotRight = gv - vec3(1.,0.,0.),
+        fromTopLeft = gv - vec3(0.,1.,0.),
+        fromTopRight = gv - vec3(1.,1.,0.);
     
-    float b12 = mix(b1dot,b2dot,gvSmooth.x);
-    float b34 = mix(b3dot,b4dot,gvSmooth.x);
+    // Vector dot products
+    float dotBotLeft = dot(vBotLeft,fromBotLeft),
+        dotBotRight = dot(vBotRight,fromBotRight),
+        dotTopLeft = dot(vTopLeft,fromTopLeft),
+        dotTopRight = dot(vTopRight,fromTopRight);
+        
+    // Linear interpolation of dot products
     
-    float b1234 = mix(b12,b34,gvSmooth.y);
+    float mixBotX = mix(dotBotLeft,dotBotRight,gvSmooth.x),
+        mixTopX = mix(dotTopLeft,dotTopRight,gvSmooth.x);
     
-    // FRONT
+    float z0 = mix(mixBotX,mixTopX,gvSmooth.y);
     
-    vec3 f1 = H33s(id + vec3(0.,0.,1.));
-    vec3 f2 = H33s(id + vec3(1.,0.,1.));
-    vec3 f3 = H33s(id + vec3(0.,1.,1.));
-    vec3 f4 = H33s(id + vec3(1.,1.,1.));
+    // Noise for Z = 1
     
-    float f1dot = dot(f1,gv - vec3(0.,0.,1.));
-    float f2dot = dot(f2,gv - vec3(1.,0.,1.));
-    float f3dot = dot(f3,gv - vec3(0.,1.,1.));
-    float f4dot = dot(f4,gv - vec3(1.,1.,1.));
+    // Random corner vectors
+    vBotLeft = H33S(id + vec3(0.,0.,1.) ),
+        vBotRight = H33S(id + vec3(1.,0.,1.) ),
+        vTopLeft = H33S(id + vec3(0.,1.,1.) ),
+        vTopRight = H33S(id + vec3(1.,1.,1.) );
+        
+    // Corner -> lUv vectors
+    fromBotLeft = gv - vec3(0.,0.,1.),
+        fromBotRight = gv - vec3(1.,0.,1.),
+        fromTopLeft = gv - vec3(0.,1.,1.),
+        fromTopRight = gv - vec3(1.,1.,1.);
     
-    float f12 = mix(f1dot,f2dot,gvSmooth.x);
-    float f34 = mix(f3dot,f4dot,gvSmooth.x);
+    // Vector dot products
+    dotBotLeft = dot(vBotLeft,fromBotLeft),
+        dotBotRight = dot(vBotRight,fromBotRight),
+        dotTopLeft = dot(vTopLeft,fromTopLeft),
+        dotTopRight = dot(vTopRight,fromTopRight);
+        
+    // Linear interpolation of dot products
     
-    float f1234 = mix(f12,f34,gvSmooth.y);
+    mixBotX = mix(dotBotLeft,dotBotRight,gvSmooth.x),
+        mixTopX = mix(dotTopLeft,dotTopRight,gvSmooth.x);
     
-    return mix(b1234,f1234,gvSmooth.z)*5.;
+    float z1 = mix(mixBotX,mixTopX,gvSmooth.y);
+    
+    return mix(z0,z1,gvSmooth.z) * a;
 
 }
 
-float worley3d(vec3 p, float scale){
+float worley3d(vec3 p, float f, float a){
 
-    p *= scale;
+    p *= f;
     
     vec3 gv = fract(p);
     vec3 id = floor(p);
@@ -134,29 +151,32 @@ float worley3d(vec3 p, float scale){
         }
     }
     
-    return sDist;
+    return sDist * a;
 
 }
 
-float volumetricDensityMap3d(vec3 p, vec3 offs){
+float volumetricDensityMap3d(vec3 p, vec3 offs, float scale){
 
     vec3 cv = vec3(p);
 
     cv += offs;
-    
-    float wor1 = 1.-worley3d(cv,1.)*.9;
 
-    float p1 = perlin3d(cv,.25)*0.8;
-    float p2 = perlin3d(cv,.5)*0.4;
-    float p3 = perlin3d(cv, 1.)*0.2;
-    float p4 = perlin3d(cv,2.)*0.1;
-    float p5 = perlin3d(cv,4.)*0.05;
-    float p6 = perlin3d(cv,8.)*0.025;
+    cv *= scale;
+    
+    // Inverted 3D Worley normalized to be between -1 and 1?
+    float wor1 = (1. - worley3d(cv,1.,1.) ) * 2. - 1.;
+
+    float p1 = perlin3d(cv,1.,8.),
+        p2 = perlin3d(cv,2.,4.),
+        p3 = perlin3d(cv,4.,2.),
+        p4 = perlin3d(cv,8.,1.),
+        p5 = perlin3d(cv,16.,.5),
+        p6 = perlin3d(cv,32.,.25);
     
     
     float col = p1 + p2 + p3 + p4 + p5 + p6 + wor1;
     
-    return max(0.,col-.5);
+    return max(0.,col-.2);
 
 }
 
@@ -244,10 +264,9 @@ vec3 getRayDirection(vec2 uv, vec3 cameraPos, vec3 lookat, float zoom){
     return normalize(vpPoint-cameraPos);
 }
 
-vec3 rayMarchCloud(vec2 uv, vec3 camera, float zoom, mat3 camRot, vec3 lookat,  AABB boundingBox){
+vec3 rayMarchCloud(vec2 uv, vec3 camera, mat3 camRot, vec3 textureOffset,  AABB boundingBox){
 
     vec3 newCamPos = camera * camRot,
-        userOffset = vec3(uTime*uUserSpeed.x,uTime*uUserSpeed.y,uTime*uUserSpeed.z) + uRandomVector,
         rd = getRayDirection(uv,newCamPos,vec3(0.),1.);
 
     ray r = ray(newCamPos, rd);
@@ -274,7 +293,7 @@ vec3 rayMarchCloud(vec2 uv, vec3 camera, float zoom, mat3 camRot, vec3 lookat,  
             if(s >= steps) break;
 
             vec3 marchPoint = getRayPoint(r, camInClouds?s:data.entryT + s);
-            float density = volumetricDensityMap3d(marchPoint,userOffset);
+            float density = volumetricDensityMap3d(marchPoint,textureOffset,uUserScale);
 
             if(density < 0.05)
                 continue;
@@ -294,7 +313,7 @@ vec3 rayMarchCloud(vec2 uv, vec3 camera, float zoom, mat3 camRot, vec3 lookat,  
                 if(lS >= maxLightDist) break;
                 
                 vec3 lightMarchPoint = getRayPoint(lightR, lS);
-                float lightDensity = volumetricDensityMap3d(lightMarchPoint,userOffset);
+                float lightDensity = volumetricDensityMap3d(lightMarchPoint,textureOffset,uUserScale);
 
                 if(lightDensity < 0.05)
                     continue;
@@ -336,7 +355,7 @@ void main() {
     uBoundingBox.bMin.z -= uUserSize.z;
     uBoundingBox.bMax.z += uUserSize.z;
 
-    mat3 camRot;;
+    mat3 camRot;
     
     if(uUserControl != 1.){
 
@@ -349,7 +368,8 @@ void main() {
 
     }
 
-    vec3 col = rayMarchCloud(uv,CAM,1.,camRot,vec3(0.),uBoundingBox);
+    vec3 userOffset = vec3(uTime*uUserSpeed.x,uTime*uUserSpeed.y,uTime*uUserSpeed.z) + uRandomVector;
+    vec3 col = rayMarchCloud(uv,CAM,camRot,userOffset,uBoundingBox);
 
     gl_FragColor = vec4(col, 1.0);
 }
